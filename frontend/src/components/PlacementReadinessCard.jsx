@@ -1,9 +1,8 @@
 import React from 'react';
 import { Award } from 'lucide-react';
-import { useStudent } from '../context/StudentContext';
 
-export default function PlacementReadinessCard() {
-  const { placementScore: scoreData, loading } = useStudent();
+export default function PlacementReadinessCard({ placementScore: scoreData = null }) {
+  const loading = { score: false };
 
   if (loading.score) {
     return (

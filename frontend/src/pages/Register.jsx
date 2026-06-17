@@ -14,7 +14,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const { signUp } = useAuth();
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -46,25 +46,22 @@ export default function Register() {
       if (authError) throw authError;
 
       if (authData?.user) {
-        // Create profile row manually since trigger wasn't assumed
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            { 
-              user_id: authData.user.id,
-              full_name: formData.fullName,
-              email: formData.email,
-              onboarding_completed: false
-            }
-          ]);
-          
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-          // Non-fatal, they can be created later or by trigger if added
+        if (authData?.session) {
+          navigate('/onboarding');
+        } else {
+          // Auto-signin fallback since trigger has confirmed the user
+          try {
+            const { data: logData, error: logErr } = await signIn(formData.email, formData.password);
+            if (logErr) throw logErr;
+            navigate('/onboarding');
+          } catch (loginErr) {
+            setError("Account created! Please sign in with your credentials.");
+            setLoading(false);
+          }
         }
+      } else {
+        navigate('/onboarding');
       }
-
-      navigate('/onboarding');
     } catch (err) {
       setError(err.message || "An error occurred during registration");
     } finally {

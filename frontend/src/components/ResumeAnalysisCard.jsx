@@ -1,11 +1,20 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, AlertCircle } from 'lucide-react';
-import { useStudent } from '../context/StudentContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 
-export default function ResumeAnalysisCard({ studentId }) {
-  const { resumeAnalysis, loading, errors, analyzeResume } = useStudent();
+export default function ResumeAnalysisCard() {
+  const { user } = useAuth();
+  const resumeAnalysis = null;
+  const loading = { resume: false };
+  const errors = {};
   const fileInputRef = useRef(null);
   const [localError, setLocalError] = useState(null);
+  
+  const analyzeResume = async (id, file) => {
+    // Will be implemented with backend
+    return null;
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];

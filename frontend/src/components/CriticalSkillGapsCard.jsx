@@ -1,9 +1,8 @@
 import React from 'react';
 import { List, CheckCircle } from 'lucide-react';
-import { useStudent } from '../context/StudentContext';
 
-export default function CriticalSkillGapsCard() {
-  const { skillGaps, loading } = useStudent();
+export default function CriticalSkillGapsCard({ skillGaps = [] }) {
+  const loading = { score: false };
 
   if (loading.score) {
     return (

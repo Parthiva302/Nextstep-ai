@@ -1,0 +1,62 @@
+{
+  "ai_chat:6151204270734090885": {
+    "value": "{\n  \"skills\": [\"HTML5\", \"CSS3\", \"JavaScript\", \"React.js\", \"Python\", \"SQL\", \"UI/UX Design\", \"Git\", \"Flask\", \"Chart.js\"],\n  \"resume_score\": 72,\n  \"ats_score\": 65,\n  \"missing_keywords\": [\"TypeScript\", \"Node.js\", \"MongoDB\", \"Docker\", \"REST API\", \"Redux\", \"Tailwind CSS\"],\n  \"improvements\": [\"Quantify achievements with metrics (e.g., 'increased performance by X%')\", \"Add direct links to GitHub repositories for each project\", \"Clarify the timeline as dates listed are in the future (2026)\", \"Expand on the specific AI models used in the Task Management App\"],\n  \"suggested_projects\": [\"Full-stack E-commerce site with Stripe integration\", \"AI-powered SaaS tool using OpenAI/LangChain\", \"Real-time Chat Application using Socket.io\"],\n  \"suggested_certifications\": [\"AWS Certified Cloud Practitioner\", \"Meta Front-End Developer Professional Certificate\", \"TensorFlow Developer Certificate\"]\n}",
+    "expiry": 1781681200.3716576
+  },
+  "ai_chat:-7896958645062969655": {
+    "value": "{\n  \"skills\": [\n    \"React.js\",\n    \"Python\",\n    \"JavaScript\",\n    \"HTML5\",\n    \"CSS3\",\n    \"Tailwind CSS\",\n    \"SQL\",\n    \"Flask\",\n    \"Git\",\n    \"GitHub\",\n    \"Figma\",\n    \"UI/UX Design\",\n    \"REST API\",\n    \"Generative AI\",\n    \"Claude API\",\n    \"LLM Integration\",\n    \"Prompt Engineering\",\n    \"Chart.js\",\n    \"D3.js\"\n  ],\n  \"resume_score\": 82,\n  \"ats_score\": 75,\n  \"missing_keywords\": [\n    \"Docker\",\n    \"Kubernetes\",\n    \"TypeScript\",\n    \"Node.js\",\n    \"MongoDB\",\n    \"CI/CD\",\n    \"AWS\",\n    \"Azure\"\n  ],\n  \"improvements\": [\n    \"Quantify achievements with more metrics (e.g., percentage increase in performance or specific user numbers)\",\n    \"Add direct links to the hosted projects or GitHub repositories for each project\",\n    \"Include a 'Coursework' section to highlight academic strengths in AI/ML\",\n    \"Clarify the timeline as the dates listed (2026) are in the future\"\n  ],\n  \"suggested_projects\": [\n    \"Build a full-stack AI-powered SaaS application using Next.js and MongoDB\",\n    \"Develop a RAG (Retrieval-Augmented Generation) system using LangChain and a Vector Database\",\n    \"Create a real-time collaborative tool using WebSockets (Socket.io)\"\n  ],\n  \"suggested_certifications\": [\n    \"AWS Certified Cloud Practitioner\",\n    \"Meta Front-End Developer Professional Certificate\",\n    \"TensorFlow Developer Certificate\"\n  ]\n}",
+    "expiry": 1781696150.76924
+  },
+  "github_profile:parthiva302": {
+    "value": {
+      "username": "Parthiva302",
+      "avatar_url": "https://avatars.githubusercontent.com/u/215816292?v=4",
+      "bio": "work like never before",
+      "name": "B.Aneesh",
+      "followers": 0,
+      "following": 12,
+      "public_repos": 39,
+      "total_stars": 14,
+      "total_forks": 1,
+      "top_languages": [
+        "JavaScript",
+        "HTML",
+        "TypeScript",
+        "CSS",
+        "Python"
+      ],
+      "active_repos": 38,
+      "account_age_years": 1.0,
+      "github_score": 79,
+      "analysis": {
+        "strengths": [
+          "Strong language diversity: JavaScript, HTML, TypeScript",
+          "Project quality recognized by 14 stars",
+          "38 repositories actively updated recently"
+        ],
+        "weaknesses": [],
+        "recommendations": [
+          "Establish detailed README guides for projects.",
+          "Contribute to open source projects.",
+          "Build a complex project using JavaScript."
+        ]
+      }
+    },
+    "expiry": 1781716004.551687
+  },
+  "leetcode_profile:parthiva": {
+    "value": {
+      "username": "Parthiva",
+      "total_solved": 0,
+      "easy_solved": 0,
+      "medium_solved": 0,
+      "hard_solved": 0,
+      "ranking": 5000001,
+      "contest_rating": 0,
+      "contest_ranking": 0,
+      "leetcode_score": 0,
+      "status": "success"
+    },
+    "expiry": 1781737605.4191928
+  }
+}

@@ -1,9 +1,8 @@
 import React from 'react';
 import { Map } from 'lucide-react';
-import { useStudent } from '../context/StudentContext';
 
-export default function LearningRoadmapCard() {
-  const { roadmap, loading } = useStudent();
+export default function LearningRoadmapCard({ roadmap = null }) {
+  const loading = { score: false };
 
   if (loading.score) {
     return (

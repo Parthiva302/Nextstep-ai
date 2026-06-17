@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Target, LayoutDashboard, User, BrainCircuit, Map, Code2, LineChart, Briefcase, FileText, Video, Compass, Award, Settings, LogOut } from 'lucide-react';
+import { Target, LayoutDashboard, User, BrainCircuit, Map, Code2, LineChart, Briefcase, FileText, Video, Compass, Award, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar() {

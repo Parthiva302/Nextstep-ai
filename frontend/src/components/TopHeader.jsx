@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Bell, Settings, UserCircle, Sun, Moon } from 'lucide-react';
+import { Search, Bell, UserCircle, Sun, Moon } from 'lucide-react';
 
 export default function TopHeader({ isDarkMode, toggleDarkMode }) {
 
@@ -27,9 +27,6 @@ export default function TopHeader({ isDarkMode, toggleDarkMode }) {
         <button className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
           <Bell size={20} />
         </button>
-        <Link to="/profile" className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors" title="Settings">
-          <Settings size={20} />
-        </Link>
         <Link to="/profile" className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] flex items-center justify-center cursor-pointer border-2 border-white dark:border-slate-800 shadow-sm transition-transform hover:scale-105">
           <UserCircle size={20} className="text-white" />
         </Link>

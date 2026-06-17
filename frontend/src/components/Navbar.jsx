@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Target, Home, User, MessageCircle, LogOut, Sun, Moon } from 'lucide-react';
 
-export default function Navbar({ studentId, onLogout, isDarkMode, toggleDarkMode }) {
+export default function Navbar({ onLogout, isDarkMode, toggleDarkMode }) {
   return (
     <nav className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-colors duration-300 w-full">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

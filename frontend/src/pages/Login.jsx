@@ -11,8 +11,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const { signIn } = useAuth();
+  const { signIn, profile, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (user && !authLoading) {
+      navigate(profile?.onboarding_completed ? '/dashboard' : '/onboarding', { replace: true });
+    }
+  }, [user, profile, authLoading]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,10 +30,9 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      const { error: authError } = await signIn(formData.email, formData.password);
+      const { data, error: authError } = await signIn(formData.email, formData.password);
       if (authError) throw authError;
-      // Note: We don't need to explicitly navigate here because App.jsx
-      // will re-render and match the protected routes automatically based on session
+      // Navigation handled by useEffect above watching user/profile state
     } catch (err) {
       setError(err.message || "Invalid email or password");
       setLoading(false);
