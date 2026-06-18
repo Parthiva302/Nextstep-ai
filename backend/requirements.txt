@@ -9,3 +9,5 @@ pdfplumber
 scikit-learn
 numpy
 pandas
+python-multipart
+
