@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   UploadCloud, CheckCircle2, ChevronRight, ChevronLeft,
   Briefcase, Sparkles, GraduationCap, Code, BrainCircuit,
-  Target, Plus, X
+  Target, Plus
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MultiSelectDropdown from "../components/MultiSelectDropdown";

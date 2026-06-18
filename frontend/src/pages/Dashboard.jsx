@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  BrainCircuit, FileText, Map, Activity, Code, Target, ChevronRight, Star,
-  GitBranch, Users, CheckCircle2, Circle, Zap, Award, AlertTriangle, TrendingUp,
-  Sparkles, ExternalLink, Lock, Plus, ArrowUpRight, Briefcase, Code2, RefreshCw,
+  BrainCircuit, FileText, Map, Activity, Target, ChevronRight,
+  GitBranch, CheckCircle2, Circle, Award,
+  Sparkles, ExternalLink, Lock, Briefcase, Code2,
   Bell, X, ClipboardCheck, ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -10,14 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useAppStore } from '../store/app-store';
 import { jsPDF } from 'jspdf';
-import { Linkedin } from '../components/Icons';
 import {
   CAREER_SKILLS_MAP,
-  CAREER_DEMAND_MAP,
-  calculateCareerMatches,
-  calculateNextStepScore,
-  logActivity,
-  addNotification
+  logActivity
 } from '../utils/score-engine';
 
 export default function Dashboard() {
@@ -38,7 +33,6 @@ export default function Dashboard() {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   // Simulator Toggles
   const [simGitHub, setSimGitHub] = useState(false);
@@ -52,7 +46,6 @@ export default function Dashboard() {
     async function loadData() {
       if (!user) return;
       try {
-        setLoading(true);
         // GitHub
         if (!githubStats) {
           const { data: gh } = await supabase.from('github_stats').select('*').eq('user_id', user.id).maybeSingle();
@@ -92,15 +85,13 @@ export default function Dashboard() {
             } else {
               setNotifications(defaultNotifs.map((n, idx) => ({ ...n, id: idx + 1000 })));
             }
-          } catch (e) {
+          } catch {
             setNotifications(defaultNotifs.map((n, idx) => ({ ...n, id: idx + 1000 })));
           }
         }
 
       } catch (err) {
         console.warn('Error loading dashboard data:', err);
-      } finally {
-        setLoading(false);
       }
     }
     loadData();
@@ -189,7 +180,7 @@ export default function Dashboard() {
   ];
 
   // AI Daily Insight Bar
-  let aiDailyInsight = '';
+  let aiDailyInsight;
   if (resumeScore === 0) {
     aiDailyInsight = '💡 Completing your Resume Upload could boost your NextStep score by up to 15 points immediately.';
   } else if (!profile?.github_username) {
@@ -224,7 +215,7 @@ export default function Dashboard() {
   if (skillScore >= 60) strengths.push(`✓ Skills: Diverse tech stack with ${skillsList.length} tags`);
   else weaknesses.push('⚠ Skills: Expand tech stack to match career demand');
 
-  let scoreExplanation = '';
+  let scoreExplanation;
   if (nextstepScore >= 80) {
     scoreExplanation = 'Your overall profile readiness is exceptional. You are in a strong position for top-tier internships and jobs. Keep up the great work!';
   } else if (nextstepScore >= 50) {
@@ -360,7 +351,9 @@ export default function Dashboard() {
     try {
       await supabase.from('notifications').update({ read: true }).eq('id', id);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    } catch (e) {}
+    } catch {
+      // Ignore update error
+    }
   };
 
   // Notification header unread count

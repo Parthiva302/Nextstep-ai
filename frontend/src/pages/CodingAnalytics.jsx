@@ -49,6 +49,24 @@ export default function CodingAnalytics() {
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [loadingProfessional, setLoadingProfessional] = useState(false);
 
+  async function loadSavedGithubStats() {
+    const { data } = await supabase
+      .from('github_stats')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+    if (data) setGithubData(data);
+  }
+
+  async function loadSavedLeetcodeStats() {
+    const { data } = await supabase
+      .from('leetcode_stats')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+    if (data) setLeetcodeData(data);
+  }
+
   // Sync state values on mount
   useEffect(() => {
     if (user) {
@@ -62,24 +80,6 @@ export default function CodingAnalytics() {
       setPortfolioUrl(profile.portfolio_url || '');
     }
   }, [user, profile]);
-
-  const loadSavedGithubStats = async () => {
-    const { data } = await supabase
-      .from('github_stats')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    if (data) setGithubData(data);
-  };
-
-  const loadSavedLeetcodeStats = async () => {
-    const { data } = await supabase
-      .from('leetcode_stats')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    if (data) setLeetcodeData(data);
-  };
 
   // Analyze GitHub
   const analyzeGithub = async () => {

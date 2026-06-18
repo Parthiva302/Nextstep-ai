@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, ChevronDown, Circle, Play, Code2, Link, BookOpen, Map, RefreshCw, Clock, Sparkles } from 'lucide-react';
+import { CheckCircle2, Circle, Code2, BookOpen, Map, RefreshCw, Clock, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/app-store';
 
@@ -10,13 +10,11 @@ export default function Roadmap() {
   const roadmapData = useAppStore((state) => state.learningRoadmap);
   const setRoadmapData = useAppStore((state) => state.setLearningRoadmap);
   const [loading, setLoading] = useState(!roadmapData);
-  const [error, setError] = useState(null);
   const [selectedWeekIdx, setSelectedWeekIdx] = useState(0);
 
   const fetchRoadmap = async () => {
     if (!user) return;
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`${BACKEND_URL}/api/roadmap/${user.id}`);
       if (!res.ok) throw new Error('Failed to load roadmap');

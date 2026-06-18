@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Target, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../supabaseClient';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -51,10 +50,10 @@ export default function Register() {
         } else {
           // Auto-signin fallback since trigger has confirmed the user
           try {
-            const { data: logData, error: logErr } = await signIn(formData.email, formData.password);
+            const { error: logErr } = await signIn(formData.email, formData.password);
             if (logErr) throw logErr;
             navigate('/onboarding');
-          } catch (loginErr) {
+          } catch {
             setError("Account created! Please sign in with your credentials.");
             setLoading(false);
           }

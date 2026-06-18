@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Circle, Sparkles, BrainCircuit } from 'lucide-react';
+import { Send, Bot, User, Circle, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/app-store';
 

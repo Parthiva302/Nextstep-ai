@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { LineChart, RefreshCw, BrainCircuit, CheckCircle2, ChevronRight, Target, Zap, Code, Database, Cloud, Shield, GitBranch } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';

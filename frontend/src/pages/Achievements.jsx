@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { Award, ShieldCheck, Code, FileText, Compass, CheckCircle2, Lock, Sparkles, BookOpen } from 'lucide-react';
+import { Award, ShieldCheck, Code, FileText, CheckCircle2, Lock, Sparkles, BookOpen } from 'lucide-react';
 import { Github } from '../components/Icons';
 
 export default function Achievements() {
@@ -174,7 +174,6 @@ export default function Achievements() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {badges.map((badge) => {
-            const Icon = badge.icon;
             return (
               <div 
                 key={badge.id}

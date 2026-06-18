@@ -117,7 +117,7 @@ export async function calculateNextStepScore(userId, profile, githubStats, leetc
   const projectScore = Math.min(projects.length * 25, 100);
 
   // Resume Score: Analysis or default uploaded score
-  const resumeAnalysis = await useAppStoreFetchResumeAnalysis(userId);
+  const resumeAnalysis = await fetchResumeAnalysisScore(userId);
   const resumeScore = resumeAnalysis?.resume_score || 0;
 
   // Skills Score: 10pts per skill, cap at 100
@@ -279,7 +279,7 @@ export async function checkAndUnlockAchievements(userId, profile, githubStats, l
 }
 
 // Fetch resume analysis helper to avoid zustand import in engine
-async function useAppStoreFetchResumeAnalysis(userId) {
+async function fetchResumeAnalysisScore(userId) {
   try {
     // Just fetch user's last uploaded resume score if stored, or fallback to Zustand locally
     const storeState = window.localStorage.getItem('nextstep-app-store');
@@ -289,6 +289,8 @@ async function useAppStoreFetchResumeAnalysis(userId) {
         return parsed.state.resumeAnalysis;
       }
     }
-  } catch (e) {}
+  } catch {
+    // Fallback if localStorage is corrupt
+  }
   return null;
 }

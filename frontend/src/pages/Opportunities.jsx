@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { ExternalLink, Briefcase, Code, Award, Users, Map, Heart, CheckCircle2, HeartOff, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ExternalLink, Briefcase, Code, Award, Users, Map, Heart, CheckCircle2, Check } from 'lucide-react';
 
 export default function Opportunities() {
   const [activeTab, setActiveTab] = useState('All');
   const [favorites, setFavorites] = useState([]);
   const [addedRoadmaps, setAddedRoadmaps] = useState([]);
-  const navigate = useNavigate();
 
   const opportunities = [
     {
