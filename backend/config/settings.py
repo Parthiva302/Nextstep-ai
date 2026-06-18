@@ -2,7 +2,10 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Resolve the path to the .env file in the backend directory
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+dotenv_path = os.path.join(base_dir, '.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 class Settings:
     """Application Settings"""

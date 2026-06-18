@@ -14,7 +14,7 @@ import { supabase } from '../supabaseClient';
 import { useAppStore } from '../store/app-store';
 import { useLocation } from 'react-router-dom';
 
-const BACKEND = 'http://localhost:8000';
+const BACKEND = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const COLORS = ['#6366F1', '#8B5CF6', '#10B981', '#3B82F6', '#F59E0B', '#EF4444'];
 
 export default function CodingAnalytics() {

@@ -17,6 +17,8 @@ import {
   addNotification
 } from "../utils/score-engine";
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function Onboarding() {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ export default function Onboarding() {
       payload.append('file', file);
 
       // Call FastAPI backend analysis
-      const res = await fetch(`http://localhost:8000/api/analyze?student_id=${user.id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/analyze?student_id=${user.id}`, {
         method: 'POST',
         body: payload,
       });
@@ -169,7 +171,7 @@ export default function Onboarding() {
       let finalGithubStats = null;
       if (formData.github.trim()) {
         try {
-          const ghRes = await fetch('http://localhost:8000/api/github/analyze', {
+          const ghRes = await fetch(`${BACKEND_URL}/api/github/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: user.id, github_username: formData.github.trim() })
@@ -205,7 +207,7 @@ export default function Onboarding() {
       let finalLeetcodeStats = null;
       if (formData.leetcode.trim()) {
         try {
-          const lcRes = await fetch('http://localhost:8000/api/leetcode/analyze', {
+          const lcRes = await fetch(`${BACKEND_URL}/api/leetcode/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: user.id, leetcode_username: formData.leetcode.trim() })

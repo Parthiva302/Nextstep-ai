@@ -37,6 +37,14 @@ app.include_router(roadmap.router)
 app.include_router(opportunities.router)
 app.include_router(achievements.router)
 
+@app.get("/")
+def root():
+    return {
+        "service": "NextStep AI",
+        "status": "online",
+        "version": "1.1.0"
+    }
+
 @app.get("/api/health")
 def health():
     """Simple API health check endpoint."""

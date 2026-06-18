@@ -6,6 +6,8 @@ import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { CAREER_GOALS } from '../constants/skills';
 import { useAppStore } from '../store/app-store';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function Profile() {
   const { signOut, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
@@ -166,7 +168,7 @@ export default function Profile() {
     setLoadingGithub(true);
     setGithubMsg({ type: '', text: '' });
     try {
-      const res = await fetch('http://localhost:8000/api/github/analyze', {
+      const res = await fetch(`${BACKEND_URL}/api/github/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user?.id || 'anon', github_username: githubUser.trim() })
