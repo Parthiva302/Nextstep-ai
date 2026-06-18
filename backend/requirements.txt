@@ -11,5 +11,7 @@ numpy
 pandas
 python-multipart
 httpx
+supabase
+
 
 

@@ -32,5 +32,32 @@ class Settings:
     LOG_LEVEL = "INFO"
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+    
+    # Supabase configuration
+    SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+    SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+    SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+    def validate(self):
+        missing = []
+        if not self.OPENROUTER_API_KEY:
+            missing.append("OPENROUTER_API_KEY")
+        if not self.DATABASE_URL or self.DATABASE_URL == "sqlite:///./test.db":
+            # On Render, DATABASE_URL is strictly required
+            if os.getenv("RENDER") or os.getenv("PORT"):
+                missing.append("DATABASE_URL")
+        if not self.SUPABASE_URL:
+            missing.append("SUPABASE_URL")
+        if not self.SUPABASE_ANON_KEY:
+            missing.append("SUPABASE_ANON_KEY")
+        if not self.SUPABASE_SERVICE_ROLE_KEY:
+            missing.append("SUPABASE_SERVICE_ROLE_KEY")
+
+        if missing:
+            raise RuntimeError(
+                f"Configuration Error: Missing required environment variables: {', '.join(missing)}. "
+                f"Please ensure they are defined in your environment or .env file."
+            )
 
 settings = Settings()
+settings.validate()
