@@ -14,10 +14,24 @@ export default function MentorChat() {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (messages.length === 0 && profile) {
+    if (!profile) return;
+    const firstName = profile?.full_name?.split(' ')[0] || 'there';
+    const expectedGreeting = `Hi ${firstName}! 👋 I'm your AI career mentor powered by NextStep AI. I can help you with interview prep, career guidance, resume tips, DSA questions, and project ideas. What would you like to work on today?`;
+
+    if (messages.length === 0) {
       setMessages([
-        { role: 'assistant', content: `Hi ${profile?.full_name?.split(' ')[0] || 'there'}! 👋 I'm your AI career mentor powered by NextStep AI. I can help you with interview prep, career guidance, resume tips, DSA questions, and project ideas. What would you like to work on today?` }
+        { role: 'assistant', content: expectedGreeting }
       ]);
+    } else {
+      const firstMsg = messages[0];
+      if (firstMsg?.role === 'assistant' && firstMsg?.content && firstMsg.content.includes("I'm your AI career mentor powered by NextStep AI")) {
+        const expectedGreetingStart = `Hi ${firstName}! 👋`;
+        if (!firstMsg.content.startsWith(expectedGreetingStart)) {
+          const updated = [...messages];
+          updated[0] = { ...firstMsg, content: expectedGreeting };
+          setMessages(updated);
+        }
+      }
     }
   }, [messages.length, profile, setMessages]);
 

@@ -592,8 +592,8 @@ export default function CodingAnalytics() {
               <div className="w-20 h-20 rounded-2xl bg-[#EC4899]/10 flex items-center justify-center mb-6">
                 <Code2 size={36} className="text-[#EC4899]" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">No LeetCode Profile Linked</h3>
-              <p className="text-slate-500 text-sm mt-2 max-w-sm">Connect your LeetCode username above to fetch problem-solving counts, contest ratings, and unlock consistency algorithms.</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Not Found</h3>
+              <p className="text-slate-500 text-sm mt-2 max-w-sm">No LeetCode profile linked. Connect your LeetCode username above to fetch problem-solving counts, contest ratings, and unlock consistency algorithms.</p>
             </div>
           )}
         </div>

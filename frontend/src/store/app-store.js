@@ -91,3 +91,19 @@ export const useAppStore = create(
     }
   )
 );
+
+export const clearAllStores = () => {
+  useAppStore.getState().resetStore();
+  useAuthStore.getState().clearAuth();
+  useProfileStore.getState().clearProfile();
+  useAnalyticsStore.getState().clearAnalytics();
+  useCareerStore.getState().clearCareer();
+  useRoadmapStore.getState().clearRoadmap();
+
+  localStorage.removeItem('nextstep-app-store');
+  localStorage.removeItem('nextstep-auth-store');
+  localStorage.removeItem('nextstep-profile-store');
+  localStorage.removeItem('nextstep-analytics-store');
+  localStorage.removeItem('nextstep-career-store');
+  localStorage.removeItem('nextstep-roadmap-store');
+};

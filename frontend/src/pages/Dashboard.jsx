@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
+  const [dbLeaderboard, setDbLeaderboard] = useState([]);
 
   // Simulator Toggles
   const [simGitHub, setSimGitHub] = useState(false);
@@ -88,6 +89,58 @@ export default function Dashboard() {
           } catch {
             setNotifications(defaultNotifs.map((n, idx) => ({ ...n, id: idx + 1000 })));
           }
+        }
+
+        // Fetch all profiles, github_stats, leetcode_stats, projects, and readiness_scores to compute leaderboard
+        const { data: allProfiles } = await supabase.from('profiles').select('user_id, full_name, email, career_goal, github_username, leetcode_username, cgpa, skills');
+        const { data: allGh } = await supabase.from('github_stats').select('user_id, github_score');
+        const { data: allLc } = await supabase.from('leetcode_stats').select('user_id, leetcode_score');
+        const { data: allProjs } = await supabase.from('projects').select('user_id');
+        const { data: allReadiness } = await supabase.from('readiness_scores').select('user_id, resume_score');
+
+        if (allProfiles) {
+          const leaderUsers = allProfiles
+            .filter(p => p.user_id !== user.id) // Filter out current user from DB lists, we'll append current user manually
+            .map(p => {
+              const gh = allGh?.find(g => g.user_id === p.user_id);
+              const lc = allLc?.find(l => l.user_id === p.user_id);
+              const userProjCount = allProjs?.filter(pr => pr.user_id === p.user_id).length || 0;
+              const readiness = allReadiness?.find(r => r.user_id === p.user_id);
+              
+              const ghVal = gh?.github_score || (p.github_username ? 55 : 0);
+              const lcVal = lc?.leetcode_score || (p.leetcode_username ? 50 : 0);
+              
+              let coding = 0;
+              if (p.github_username && p.leetcode_username) {
+                coding = Math.round(ghVal * 0.5 + lcVal * 0.5);
+              } else if (p.github_username) {
+                coding = ghVal;
+              } else if (p.leetcode_username) {
+                coding = lcVal;
+              }
+
+              const acad = p.cgpa ? Math.min(Math.round(p.cgpa * 10), 100) : 0;
+              const proj = Math.min(userProjCount * 25, 100);
+              const resume = readiness?.resume_score || 0;
+              const skillsList = Array.isArray(p.skills) ? p.skills : [];
+              const skill = Math.min(skillsList.length * 10, 100);
+
+              const score = Math.round(
+                coding * 0.30 +
+                acad * 0.25 +
+                proj * 0.20 +
+                resume * 0.15 +
+                skill * 0.10
+              );
+
+              return {
+                name: p.full_name || p.email?.split('@')[0] || 'Student',
+                goal: p.career_goal || 'Software Engineer',
+                score: score,
+                isCurrentUser: false
+              };
+            });
+          setDbLeaderboard(leaderUsers);
         }
 
       } catch (err) {
@@ -257,13 +310,15 @@ export default function Dashboard() {
   ];
 
   // Leaderboard ranking including current student dynamically
-  const leaderboardMock = [
+  const baseLeaderboard = dbLeaderboard.length >= 2 ? dbLeaderboard : [
     { name: 'Parthiva', goal: 'AI Engineer', score: 91 },
     { name: 'Abhinav', goal: 'Full Stack Developer', score: 87 },
     { name: 'Murali', goal: 'DevOps Engineer', score: 84 },
   ];
-  const fullLeaderboard = [...leaderboardMock, { name: displayName, goal: selectedGoal, score: nextstepScore, isCurrentUser: true }]
-    .sort((a, b) => b.score - a.score);
+  const fullLeaderboard = [...baseLeaderboard, { name: displayName, goal: selectedGoal, score: nextstepScore, isCurrentUser: true }]
+    .sort((a, b) => b.score - a.score)
+    .filter((v, i, a) => a.findIndex(t => t.name === v.name) === i) // Filter duplicate names
+    .slice(0, 5); // Top 5 entries
 
   // Generate Career Report PDF
   const generateCareerReport = () => {

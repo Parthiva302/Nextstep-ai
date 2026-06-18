@@ -29,6 +29,7 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
             pass
 
         # 1. Fetch student data for context
+        student_name = "Student"
         skills = []
         projects = []
         career_goal = "Software Engineer"
@@ -44,6 +45,7 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
             gap_skills = [g.skill_name for g in gaps]
             
             if profile:
+                student_name = profile.full_name or "Student"
                 career_goal = profile.career_goal or "Software Engineer"
                 s_raw = profile.skills_json
                 skills = json.loads(s_raw) if isinstance(s_raw, str) else (s_raw or [])
@@ -56,6 +58,7 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
             profile_sql = text("SELECT * FROM profiles WHERE user_id = :uid OR id = :uid LIMIT 1")
             profile_row = db.execute(profile_sql, {"uid": req.student_id}).mappings().first()
             if profile_row:
+                student_name = profile_row.get("full_name") or "Student"
                 career_goal = profile_row.get("career_goal") or "Software Engineer"
                 s_data = profile_row.get("skills")
                 if s_data:
@@ -130,6 +133,7 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
         # 4. Construct token-optimized system prompt
         system_prompt = f"""You are an elite AI Career Coach and Technical Mentor.
 Profile details:
+- Student Name: {student_name}
 - NextStep Index: {score_val}/100
 - Goal: {career_goal}
 - Skills: {', '.join(skills[:10])}
@@ -137,6 +141,7 @@ Profile details:
 - Missing Skills to study: {', '.join(gap_skills[:5])}
 
 Actionable rules:
+- Refer to the student by their Name ({student_name}) when appropriate.
 - Refer to these details when answering.
 - Keep responses compact, motivating, and extremely technical.
 - Suggest projects targeting their missing skills if requested."""

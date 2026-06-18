@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { clearAllStores } from '../store/app-store';
 
 const AuthContext = createContext();
 
@@ -72,6 +73,7 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
+    clearAllStores();
     setProfile(null);
     return supabase.auth.signOut();
   };
