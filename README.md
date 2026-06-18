@@ -1,121 +1,359 @@
-# 🎯 NextStep AI - Production-Ready Career Readiness Platform
+# 🚀 NextStep AI
 
-NextStep AI is an advanced, production-grade SaaS career readiness platform designed to evaluate candidate profiles, detect skill gaps, track coding analytics, generate automated learning roadmaps, and match students with job opportunities using AI.
+> **Your Next Step, Powered by AI**
 
----
+NextStep AI is an AI-powered Career Intelligence Platform that helps students evaluate their placement readiness, analyze coding profiles, identify skill gaps, generate personalized learning roadmaps, optimize resumes, and discover relevant opportunities.
 
-## 🛠 Tech Stack
-
-### Frontend
-* **Core**: React 19 (Vite, TypeScript/JS, Fast Refresh)
-* **Styling**: Tailwind CSS (sleek dark mode, premium glassmorphism aesthetics)
-* **State Management**: Zustand (centralized global stores: `authStore`, `profileStore`, `analyticsStore`, `roadmapStore`, `careerStore` with session persistence)
-* **Visualizations**: Recharts (for live coding analysis and skill spider charts)
-* **Navigation**: React Router DOM (lazy loaded routes and route guards)
-* **Exporting**: jsPDF (for generating verified student career reports)
-
-### Backend
-* **Framework**: FastAPI (high-performance Python web framework)
-* **Asynchronous Client**: HTTPX (for fast external API scraping and queries)
-* **ORM**: SQLAlchemy (database communication with Supabase PostgreSQL)
-* **Deployment Server**: Uvicorn (ASGI server with reload capability)
-
-### Database & Security
-* **Authentication**: Supabase Auth (token-based session management)
-* **Database**: Supabase PostgreSQL (hosted on AWS with connection pooling)
-* **File Storage**: Supabase Storage Buckets (secure resume hosting)
+The platform combines Resume Analysis, GitHub Analytics, LeetCode Insights, AI Mentorship, Career Matching, and Opportunity Recommendations into a single career growth ecosystem.
 
 ---
 
-## 🏗 Architecture
+# ✨ Features
 
-The platform follows a decoupled client-server architecture with background synchronization:
+## 📊 Placement Readiness Score
 
-```mermaid
-graph TD
-    User([User / Browser])
-    React[React Frontend (Vite)]
-    FastAPI[FastAPI Backend]
-    SupabaseDB[(Supabase PostgreSQL)]
-    GitHub[GitHub API]
-    LeetCode[LeetCode API / Scraper]
-    OpenRouter[OpenRouter / Gemini AI]
-    
-    User -->|Interacts| React
-    React -->|Direct Query / Real-time Sync| SupabaseDB
-    React -->|API Requests| FastAPI
-    
-    FastAPI -->|DB Operations| SupabaseDB
-    FastAPI -->|Analyze Github| GitHub
-    FastAPI -->|Analyze LeetCode| LeetCode
-    FastAPI -->|AI Insights & Roadmap| OpenRouter
+Calculate a comprehensive readiness score using:
+
+* Coding Performance (30%)
+* Academics (25%)
+* Projects (20%)
+* Resume Quality (15%)
+* Skills & Certifications (10%)
+
+Provides actionable insights to improve employability.
+
+---
+
+## 🤖 AI Career Mentor
+
+AI-powered mentor that helps with:
+
+* Resume improvements
+* Interview preparation
+* DSA guidance
+* Career planning
+* Project suggestions
+* Learning recommendations
+
+Powered by OpenRouter AI.
+
+---
+
+## 🛣 Career GPS Roadmap
+
+Personalized learning roadmap that guides students through:
+
+1. Foundation
+2. Core Skills
+3. Projects
+4. Interview Preparation
+5. Placement Ready
+
+Each stage includes resources, milestones, and progress tracking.
+
+---
+
+## 📄 Resume Analyzer
+
+Upload your resume and receive:
+
+* ATS Score
+* Missing Keywords
+* Resume Strength Analysis
+* Improvement Suggestions
+* Skill Extraction
+
+---
+
+## 💻 Coding Intelligence Dashboard
+
+Analyze coding profiles through:
+
+### GitHub Analytics
+
+* Repository Count
+* Stars
+* Followers
+* Commit Activity
+* Language Distribution
+
+### LeetCode Analytics
+
+* Problems Solved
+* Difficulty Breakdown
+* Ranking Insights
+* Consistency Tracking
+
+---
+
+## 🎯 Career Match Engine
+
+AI-generated career recommendations:
+
+* AI Engineer
+* Software Engineer
+* Data Analyst
+* DevOps Engineer
+* Cloud Engineer
+* Cybersecurity Engineer
+
+Includes:
+
+* Match Percentage
+* Missing Skills
+* Salary Range
+* Demand Indicator
+
+---
+
+## 🌟 Opportunity Engine
+
+Discover:
+
+* Hackathons
+* Internships
+* Open Source Programs
+* Certifications
+* Competitions
+
+Matched based on profile and career goals.
+
+---
+
+## 🏆 Achievements & Badges
+
+Gamified progress tracking through:
+
+* Resume Upload Badge
+* GitHub Connected Badge
+* LeetCode Connected Badge
+* Placement Ready Badge
+* Career Explorer Badge
+
+---
+
+## 👨💼 Public Recruiter Profile
+
+Generate a shareable recruiter-friendly profile containing:
+
+* Skills
+* Projects
+* Coding Stats
+* Resume Score
+* Academic Details
+
+Accessible via public URL.
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend
+
+* React 19
+* Vite
+* Tailwind CSS
+* Zustand
+* React Router DOM
+* Recharts
+* jsPDF
+
+## Backend
+
+* FastAPI
+* Python
+* SQLAlchemy
+* HTTPX
+* Uvicorn
+
+## Database & Authentication
+
+* Supabase Auth
+* Supabase PostgreSQL
+* Supabase Storage
+
+## AI Services
+
+* OpenRouter API
+* Gemini Models
+* AI Career Mentor
+* Roadmap Generation
+
+## Deployment
+
+* Frontend: Vercel
+* Backend: Render
+* Database: Supabase
+
+---
+
+# 🏗 System Architecture
+
+```text
+User
+ │
+ ▼
+React Frontend (Vercel)
+ │
+ ├── Supabase Auth
+ │
+ ├── Resume Upload
+ │
+ ▼
+FastAPI Backend (Render)
+ │
+ ├── GitHub Analytics
+ ├── LeetCode Analytics
+ ├── Career Match Engine
+ ├── Resume Analyzer
+ ├── AI Mentor
+ └── Roadmap Generator
+ │
+ ▼
+Supabase PostgreSQL
+ │
+ ▼
+OpenRouter AI Models
 ```
 
 ---
 
-## 🔄 Core Workflow
+# 📂 Project Structure
 
-1. **User Onboarding**:
-   * The user registers/logs in using Supabase Auth.
-   * Completes a 6-step onboarding wizard to gather basic details, career goals, and skills.
-2. **Profile Integrations & Resume Processing**:
-   * Links GitHub and LeetCode accounts. The system fetches metrics, commits, stars, languages, and coding stats.
-   * Uploads their resume to Supabase Storage. The Resume Analyzer extracts text and ranks the layout.
-3. **Data Sync & Scoring Engine**:
-   * Re-computes scores dynamically using a weighted formula:
-     $$\text{Readiness Index} = (\text{Coding} \times 0.3) + (\text{Academic} \times 0.25) + (\text{Projects} \times 0.2) + (\text{Resume} \times 0.15) + (\text{Skills} \times 0.1)$$
-   * Automatically seeds matching career profiles and maps missing skill gaps.
-4. **Learning & Opportunities**:
-   * Generates a step-by-step **Career GPS Roadmap** to bridge gaps.
-   * Provides an **AI Career Mentor** chatbot for live resume advice and coding interview help.
-   * Matches profiles with real-world job postings.
-
----
-
-## 📈 Platform Features & Uses
-
-* **Placement Readiness Score**: Live, interactive index showing candidate employability.
-* **Career GPS Roadmap**: Visual stage-by-stage learning tracking (Foundation, Core Skills, Projects, Interview Prep, Placement Ready) that links directly to resource pages.
-* **Resume Analyzer**: Instant feedback on resume strength and missing keywords.
-* **Coding Analytics**: Detailed language breakdown and commit history tracking.
-* **Mock Interview Simulator**: Real-time simulated questions to test technical knowledge.
+```text
+NextStep-AI/
+│
+├── frontend/
+│   ├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── stores/
+│   ├── services/
+│   └── assets/
+│
+├── backend/
+│   ├── routers/
+│   ├── services/
+│   ├── models/
+│   ├── middleware/
+│   ├── utils/
+│   ├── config/
+│   └── main.py
+│
+└── README.md
+```
 
 ---
 
-## 🚀 Running the Project Locally
+# ⚙️ Environment Variables
 
-### 1. Backend Setup
-1. Navigate to `backend/`:
-   ```bash
-   cd backend
-   ```
-2. Activate venv & install dependencies:
-   ```bash
-   python -m venv venv
-   .\venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-3. Set environment variables in `backend/.env`:
-   ```env
-   DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/postgres
-   OPENROUTER_API_KEY=your_key
-   ```
-4. Start the server:
-   ```bash
-   .\venv\Scripts\uvicorn.exe main:app --reload --port 8000
-   ```
+## Backend (.env)
 
-### 2. Frontend Setup
-1. Navigate to `frontend/`:
-   ```bash
-   cd ../frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Configure `frontend/.env` variables.
-4. Start dev server:
-   ```bash
-   npm run dev
-   ```
+```env
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+DATABASE_URL=
+OPENROUTER_API_KEY=
+GITHUB_TOKEN=
+```
+
+## Frontend (.env)
+
+```env
+VITE_API_URL=
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+---
+
+# 🚀 Running Locally
+
+## Backend
+
+```bash
+cd backend
+
+python -m venv venv
+
+source venv/bin/activate
+# Windows
+venv\Scripts\activate
+
+pip install -r requirements.txt
+
+uvicorn main:app --reload
+```
+
+---
+
+## Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+---
+
+# 🌐 Deployment
+
+## Backend (Render)
+
+Build Command
+
+```bash
+pip install -r requirements.txt
+```
+
+Start Command
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+---
+
+## Frontend (Vercel)
+
+Environment Variable
+
+```env
+VITE_API_URL=https://your-render-backend-url.onrender.com
+```
+
+Deploy directly from GitHub.
+
+---
+
+# 🎯 Future Enhancements
+
+* AI Mock Interview Simulator
+* Company-specific Resume Scoring
+* LinkedIn Analytics
+* Real-time Job Aggregation
+* ATS Optimization Engine
+* Placement Prediction Model
+* Multi-Agent Career Advisor
+* Mobile Application
+
+---
+
+# 👨💻 Developer
+
+**Parthiva Aneesh**
+
+B.Tech CSE (AI & Future Technologies)
+SRM University AP
+
+GitHub: https://github.com/Parthiva302
+
+LinkedIn: https://linkedin.com/in/parthiva-aneesh
+
+---
+
+⭐ If you like this project, consider giving it a star on GitHub.
