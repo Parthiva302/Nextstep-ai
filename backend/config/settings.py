@@ -14,10 +14,10 @@ class Settings:
     
     # AI Models priorities
     MODELS = {
-        "primary": os.getenv("PRIMARY_MODEL", "google/gemma-2-9b-it:free"),
-        "fallback_1": os.getenv("FALLBACK_MODEL_1", "google/gemma-2-9b-it:free"),
-        "fallback_2": os.getenv("FALLBACK_MODEL_2", "meta-llama/llama-3-8b-instruct:free"),
-        "fallback_3": os.getenv("FALLBACK_MODEL_3", "mistralai/mistral-7b-instruct:free")
+        "primary": os.getenv("PRIMARY_MODEL", "openrouter/free"),
+        "fallback_1": os.getenv("FALLBACK_MODEL_1", "meta-llama/llama-3.3-70b-instruct:free"),
+        "fallback_2": os.getenv("FALLBACK_MODEL_2", "google/gemma-4-31b-it:free"),
+        "fallback_3": os.getenv("FALLBACK_MODEL_3", "qwen/qwen3-coder:free")
     }
     
     DAILY_COST_LIMIT = 50  # $50 limit

@@ -18,8 +18,6 @@ class AIService:
         return self.models["primary"]
 
     def call_openrouter(self, messages: List[Dict], max_tokens: int = 500, temperature: float = 0.7) -> str:
-        model = self.get_model()
-        
         # Check cache first using hashed message representation
         cache_key = f"ai_chat:{hash(json.dumps(messages, sort_keys=True))}"
         cached = cache_manager.get(cache_key)
@@ -35,34 +33,44 @@ class AIService:
         }
         
         payload = {
-            "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature
         }
 
-        try:
-            logger.info(f"Querying OpenRouter model: {model}")
-            res = requests.post(self.url, headers=headers, json=payload, timeout=self.timeout)
-            
-            if res.status_code == 429:
-                logger.warning(f"Primary model {model} rate-limited. Trying fallback_1.")
-                payload["model"] = self.models["fallback_1"]
+        # Build prioritized list of unique models to try
+        models_to_try = [
+            self.models.get("primary"),
+            self.models.get("fallback_1"),
+            self.models.get("fallback_2"),
+            self.models.get("fallback_3")
+        ]
+        
+        # Remove duplicates while preserving priority order
+        seen = set()
+        unique_models = [m for m in models_to_try if m and not (m in seen or seen.add(m))]
+
+        last_error = "No models configured"
+        for model in unique_models:
+            payload["model"] = model
+            try:
+                logger.info(f"Querying OpenRouter model: {model}")
                 res = requests.post(self.url, headers=headers, json=payload, timeout=self.timeout)
                 
-            if res.status_code != 200:
-                logger.error(f"OpenRouter API returned error code {res.status_code}: {res.text}")
-                return ""
-                
-            content = res.json()["choices"][0]["message"]["content"]
-            
-            # Cache positive results for 30 minutes to reduce token costs
-            cache_manager.set(cache_key, content, ttl_seconds=1800)
-            return content
-            
-        except Exception as e:
-            logger.error(f"Exception during OpenRouter call: {e}")
-            return ""
+                if res.status_code == 200:
+                    content = res.json()["choices"][0]["message"]["content"]
+                    # Cache positive results for 30 minutes to reduce token costs
+                    cache_manager.set(cache_key, content, ttl_seconds=1800)
+                    return content
+                else:
+                    last_error = f"Status {res.status_code}: {res.text}"
+                    logger.warning(f"OpenRouter model {model} returned error: {last_error}. Trying fallback...")
+            except Exception as e:
+                last_error = str(e)
+                logger.error(f"Exception during OpenRouter call with model {model}: {e}. Trying fallback...")
+
+        logger.error(f"All OpenRouter models failed. Last error: {last_error}")
+        return ""
 
     def analyze_resume(self, resume_text: str) -> Dict:
         """Token-optimized prompt to analyze resume structure."""
