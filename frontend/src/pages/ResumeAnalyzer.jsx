@@ -4,6 +4,7 @@ import { FileText, RefreshCw, UploadCloud, AlertCircle, CheckCircle2, ChevronRig
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/app-store';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
+import { supabase } from '../supabaseClient';
 
 const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api`;
 
@@ -16,6 +17,53 @@ export default function ResumeAnalyzer() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleSkillsChange = async (newSkills) => {
+    const updatedAnalysis = { ...resumeAnalysis, skills: newSkills };
+    setResumeAnalysis(updatedAnalysis);
+    
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ skills: newSkills })
+          .eq('user_id', user.id);
+      } catch (err) {
+        console.warn("Failed to update profile skills:", err);
+      }
+    }
+  };
+
+  const handleKeywordsChange = (newKeywords) => {
+    const updatedAnalysis = { ...resumeAnalysis, missing_keywords: newKeywords };
+    setResumeAnalysis(updatedAnalysis);
+  };
+
+  const addKeywordToSkills = async (keyword) => {
+    const currentSkills = resumeAnalysis?.skills || [];
+    if (!currentSkills.includes(keyword)) {
+      const newSkills = [...currentSkills, keyword];
+      const newKeywords = (resumeAnalysis?.missing_keywords || []).filter(k => k !== keyword);
+      
+      const updatedAnalysis = { 
+        ...resumeAnalysis, 
+        skills: newSkills,
+        missing_keywords: newKeywords
+      };
+      setResumeAnalysis(updatedAnalysis);
+      
+      if (user) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ skills: newSkills })
+            .eq('user_id', user.id);
+        } catch (err) {
+          console.warn("Failed to update profile skills:", err);
+        }
+      }
+    }
+  };
 
   const analyzeResume = async (fileToAnalyze) => {
     if (!fileToAnalyze) return;
@@ -213,7 +261,7 @@ export default function ResumeAnalyzer() {
                         <button 
                           onClick={() => {
                             const updated = resumeAnalysis.skills.filter(s => s !== skill);
-                            setResumeAnalysis({ ...resumeAnalysis, skills: updated });
+                            handleSkillsChange(updated);
                           }}
                           className="hover:bg-[#10B981]/25 rounded-full p-0.5 transition-colors"
                           title="Remove Skill"
@@ -226,25 +274,30 @@ export default function ResumeAnalyzer() {
                     <span className="text-sm text-slate-500 italic">No skills selected.</span>
                   )}
                 </div>
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <MultiSelectDropdown
-                    selected={resumeAnalysis.skills || []}
-                    onChange={(skills) => setResumeAnalysis({ ...resumeAnalysis, skills })}
-                    placeholder="Search and add missing skills..."
-                  />
-                </div>
               </div>
 
               <div className="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm transition-colors duration-300">
                 <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wider">Missing Keywords</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {resumeAnalysis.missing_keywords && resumeAnalysis.missing_keywords.length > 0 ? resumeAnalysis.missing_keywords.map((kw, i) => (
-                    <span key={i} className="px-3 py-1 bg-red-500/10 text-red-500 dark:text-red-400 rounded-full text-xs font-medium">
-                      {kw}
-                    </span>
+                    <button 
+                      key={i} 
+                      onClick={() => addKeywordToSkills(kw)}
+                      className="px-3 py-1 bg-red-500/10 hover:bg-[#10B981]/20 text-red-500 hover:text-[#10B981] dark:text-red-400 rounded-full text-xs font-medium border border-transparent hover:border-[#10B981]/25 transition-all flex items-center gap-1"
+                      title="Move to Detected Skills"
+                    >
+                      {kw} +
+                    </button>
                   )) : (
                     <span className="text-sm text-slate-500 italic">No missing keywords identified.</span>
                   )}
+                </div>
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 mt-4">
+                  <MultiSelectDropdown
+                    selected={resumeAnalysis.missing_keywords || []}
+                    onChange={handleKeywordsChange}
+                    placeholder="Search and add missing keywords..."
+                  />
                 </div>
               </div>
             </div>
