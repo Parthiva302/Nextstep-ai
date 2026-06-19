@@ -1,11 +1,12 @@
 # backend/routers/mentor.py
 import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
 from models.database import get_db
-from models.schema import StudentProfile, ReadinessScore, SkillGap, ChatMessage
+from models.schema import Student, StudentProfile, ReadinessScore, SkillGap, ChatMessage
 from services.ai_service import ai_service
 from utils.logger import logger
 
@@ -34,25 +35,31 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
         projects = []
         career_goal = "Software Engineer"
         score_val = 50
+        resume_score_val = 0
+        github_stats_str = "No GitHub stats linked"
+        leetcode_stats_str = "No LeetCode stats linked"
         gap_skills = []
 
         if not is_uuid:
             # Legacy integer ID
             int_id = int(req.student_id)
+            student_obj = db.query(Student).filter(Student.id == int_id).first()
             profile = db.query(StudentProfile).filter(StudentProfile.student_id == int_id).first()
             score = db.query(ReadinessScore).filter(ReadinessScore.student_id == int_id).order_by(ReadinessScore.created_at.desc()).first()
             gaps = db.query(SkillGap).filter(SkillGap.student_id == int_id).all()
             gap_skills = [g.skill_name for g in gaps]
             
+            if student_obj:
+                student_name = student_obj.name or "Student"
             if profile:
-                student_name = profile.full_name or "Student"
                 career_goal = profile.career_goal or "Software Engineer"
                 s_raw = profile.skills_json
                 skills = json.loads(s_raw) if isinstance(s_raw, str) else (s_raw or [])
                 p_raw = profile.projects_json
                 projects = json.loads(p_raw) if isinstance(p_raw, str) else (p_raw or [])
             if score:
-                score_val = score.total_score
+                score_val = score.total_score or 50
+                resume_score_val = score.resume_score or 0
         else:
             # Supabase UUID
             profile_sql = text("SELECT * FROM profiles WHERE user_id = :uid OR id = :uid LIMIT 1")
@@ -72,12 +79,47 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
                 logger.warning(f"Error fetching projects for chat: {e}")
 
             try:
-                score_sql = text("SELECT total_score FROM readiness_scores WHERE user_id = :uid ORDER BY created_at DESC LIMIT 1")
+                score_sql = text("SELECT total_score, resume_score FROM readiness_scores WHERE user_id = :uid ORDER BY created_at DESC LIMIT 1")
                 score_row = db.execute(score_sql, {"uid": req.student_id}).mappings().first()
                 if score_row:
-                    score_val = score_row.get("total_score")
+                    score_val = score_row.get("total_score") or 50
+                    resume_score_val = score_row.get("resume_score") or 0
             except Exception as e:
                 logger.warning(f"Error fetching score for chat: {e}")
+
+            # Fetch GitHub Stats
+            try:
+                gh_sql = text("SELECT github_score, public_repos, total_stars, active_repos, languages FROM github_stats WHERE user_id = :uid LIMIT 1")
+                gh_row = db.execute(gh_sql, {"uid": req.student_id}).mappings().first()
+                if gh_row:
+                    langs = gh_row.get("languages") or []
+                    if isinstance(langs, str):
+                        langs = json.loads(langs)
+                    github_stats_str = (
+                        f"Score: {gh_row.get('github_score') or 0}, "
+                        f"Repos: {gh_row.get('public_repos') or 0}, "
+                        f"Stars: {gh_row.get('total_stars') or 0}, "
+                        f"Active Repos: {gh_row.get('active_repos') or 0}, "
+                        f"Languages: {', '.join(langs[:5])}"
+                    )
+            except Exception as e:
+                logger.warning(f"Error fetching github stats for chat: {e}")
+
+            # Fetch LeetCode Stats
+            try:
+                lc_sql = text("SELECT leetcode_score, total_solved, easy_solved, medium_solved, hard_solved, ranking FROM leetcode_stats WHERE user_id = :uid LIMIT 1")
+                lc_row = db.execute(lc_sql, {"uid": req.student_id}).mappings().first()
+                if lc_row:
+                    leetcode_stats_str = (
+                        f"Score: {lc_row.get('leetcode_score') or 0}, "
+                        f"Solved: {lc_row.get('total_solved') or 0} "
+                        f"(Easy: {lc_row.get('easy_solved') or 0}, "
+                        f"Medium: {lc_row.get('medium_solved') or 0}, "
+                        f"Hard: {lc_row.get('hard_solved') or 0}), "
+                        f"Ranking: {lc_row.get('ranking') or 'N/A'}"
+                    )
+            except Exception as e:
+                logger.warning(f"Error fetching leetcode stats for chat: {e}")
 
             try:
                 matches_sql = text("SELECT missing_skills FROM career_matches WHERE user_id = :uid AND career_name = :goal LIMIT 1")
@@ -131,19 +173,23 @@ async def mentor_chat(req: MentorChatRequest, db: Session = Depends(get_db)):
             logger.warning(f"Failed to fetch conversation history: {e}")
 
         # 4. Construct token-optimized system prompt
-        system_prompt = f"""You are an elite AI Career Coach and Technical Mentor.
-Profile details:
+        system_prompt = f"""You are NextStep AI's elite AI Career Coach and Technical Mentor.
+Profile details of the student you are helping:
 - Student Name: {student_name}
-- NextStep Index: {score_val}/100
-- Goal: {career_goal}
-- Skills: {', '.join(skills[:10])}
-- Projects: {', '.join(projects[:5])}
-- Missing Skills to study: {', '.join(gap_skills[:5])}
+- Career Goal: {career_goal}
+- Placement Readiness Score: {score_val}/100
+- Resume Quality Score: {resume_score_val}/100
+- Skills: {', '.join(skills[:15]) if skills else 'None added'}
+- Projects: {', '.join(projects[:5]) if projects else 'None added'}
+- GitHub Stats: {github_stats_str}
+- LeetCode Stats: {leetcode_stats_str}
+- Missing Skills to study: {', '.join(gap_skills[:5]) if gap_skills else 'None identified'}
 
 Actionable rules:
-- Refer to the student by their Name ({student_name}) when appropriate.
-- Refer to these details when answering.
-- Keep responses compact, motivating, and extremely technical.
+- Address the student by their Name ({student_name}) when appropriate to personalize the response.
+- Directly reference their specific skills, projects, and readiness index in your advice.
+- If they have weaknesses in coding, projects, or resume scores, give concrete recommendations to raise them.
+- Keep responses compact, motivating, professional, and extremely technical.
 - Suggest projects targeting their missing skills if requested."""
 
         # Setup messages list
@@ -155,10 +201,13 @@ Actionable rules:
         messages.append({"role": "user", "content": req.question})
 
         # Call OpenRouter
-        response_text = ai_service.call_openrouter(messages, max_tokens=500, temperature=0.7)
+        response_text, model_used = ai_service.call_openrouter(messages, max_tokens=500, temperature=0.7)
 
         if not response_text:
-            response_text = f"I'm here to support your progress! As an aspiring {career_goal} with an index of {score_val}/100, focus on learning {', '.join(gap_skills[:3])} and coding. What specific technical concepts can I explain?"
+            return {
+                "success": False,
+                "error": "All OpenRouter models failed to respond. Please try again later."
+            }
 
         # 5. Save Assistant Message Response to Database
         try:
@@ -174,11 +223,14 @@ Actionable rules:
             logger.warning(f"Failed to persist assistant chat response to database: {e}")
 
         return {
+            "success": True,
             "response": response_text,
-            "relevant_data": {
-                "student_score": score_val
-            }
+            "model_used": model_used,
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
         logger.error(f"Mentor chat endpoint error: {e}")
-        raise HTTPException(status_code=500, detail="Unable to process your chat question. Please try again.")
+        return {
+            "success": False,
+            "error": "Internal server error while processing your request. Please try again."
+        }

@@ -17,13 +17,13 @@ class AIService:
     def get_model(self) -> str:
         return self.models["primary"]
 
-    def call_openrouter(self, messages: List[Dict], max_tokens: int = 500, temperature: float = 0.7) -> str:
+    def call_openrouter(self, messages: List[Dict], max_tokens: int = 500, temperature: float = 0.7) -> tuple:
         # Check cache first using hashed message representation
         cache_key = f"ai_chat:{hash(json.dumps(messages, sort_keys=True))}"
         cached = cache_manager.get(cache_key)
         if cached:
             logger.info("AI response served from cache.")
-            return cached
+            return cached, "cached"
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -38,39 +38,55 @@ class AIService:
             "temperature": temperature
         }
 
-        # Build prioritized list of unique models to try
+        # User-specified fallback order
         models_to_try = [
-            self.models.get("primary"),
-            self.models.get("fallback_1"),
-            self.models.get("fallback_2"),
-            self.models.get("fallback_3")
+            "anthropic/claude-sonnet-4",
+            "google/gemini-2.5-flash",
+            "mistralai/mistral-small-3.1"
         ]
-        
-        # Remove duplicates while preserving priority order
-        seen = set()
-        unique_models = [m for m in models_to_try if m and not (m in seen or seen.add(m))]
 
         last_error = "No models configured"
-        for model in unique_models:
+        for model in models_to_try:
             payload["model"] = model
-            try:
-                logger.info(f"Querying OpenRouter model: {model}")
-                res = requests.post(self.url, headers=headers, json=payload, timeout=self.timeout)
-                
-                if res.status_code == 200:
-                    content = res.json()["choices"][0]["message"]["content"]
-                    # Cache positive results for 30 minutes to reduce token costs
-                    cache_manager.set(cache_key, content, ttl_seconds=1800)
-                    return content
-                else:
+            for attempt in range(1, 4):
+                try:
+                    logger.info(f"Querying OpenRouter model: {model} (Attempt {attempt}/3)")
+                    # 15 second timeout as requested
+                    res = requests.post(self.url, headers=headers, json=payload, timeout=15)
+                    
+                    if res.status_code == 200:
+                        content = res.json()["choices"][0]["message"]["content"]
+                        # Cache positive results for 30 minutes to reduce token costs
+                        cache_manager.set(cache_key, content, ttl_seconds=1800)
+                        return content, model
+                    
+                    # Handle rate limit (429) or other API errors
                     last_error = f"Status {res.status_code}: {res.text}"
-                    logger.warning(f"OpenRouter model {model} returned error: {last_error}. Trying fallback...")
-            except Exception as e:
-                last_error = str(e)
-                logger.error(f"Exception during OpenRouter call with model {model}: {e}. Trying fallback...")
+                    logger.warning(
+                        f"Model {model} attempt {attempt}/3 failed with status {res.status_code}. "
+                        f"Response: {res.text}"
+                    )
+                    
+                    # Non-transient errors (like 404 or 400) don't benefit from retries
+                    if res.status_code in [400, 404]:
+                        break
+                        
+                except requests.Timeout as e:
+                    last_error = f"Timeout: {e}"
+                    logger.error(f"Model {model} attempt {attempt}/3 timed out.")
+                except Exception as e:
+                    last_error = f"Exception: {e}"
+                    logger.error(f"Model {model} attempt {attempt}/3 failed with exception: {e}")
+                
+                # Backoff before retrying
+                if attempt < 3:
+                    import time
+                    time.sleep(1)
+            
+            logger.warning(f"Model {model} exhausted all 3 attempts. Trying next fallback model...")
 
         logger.error(f"All OpenRouter models failed. Last error: {last_error}")
-        return ""
+        return None, None
 
     def analyze_resume(self, resume_text: str) -> Dict:
         """Token-optimized prompt to analyze resume structure."""
@@ -89,7 +105,7 @@ Resume:
 {resume_text}"""
 
         messages = [{"role": "user", "content": prompt}]
-        response_text = self.call_openrouter(messages, max_tokens=600, temperature=0.3)
+        response_text, model_used = self.call_openrouter(messages, max_tokens=600, temperature=0.3)
         
         if not response_text:
             return {"error": "AI service unavailable"}
@@ -120,7 +136,7 @@ Schema:
 }}"""
 
         messages = [{"role": "user", "content": prompt}]
-        response_text = self.call_openrouter(messages, max_tokens=1500, temperature=0.4)
+        response_text, model_used = self.call_openrouter(messages, max_tokens=1500, temperature=0.4)
         
         if not response_text:
             return {"error": "AI service unavailable"}

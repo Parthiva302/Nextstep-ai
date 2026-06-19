@@ -6,7 +6,7 @@ import { useAppStore } from '../store/app-store';
 import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { supabase } from '../supabaseClient';
 
-const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api`;
+const API_URL = `${import.meta.env.VITE_API_URL || ''}/api`;
 
 export default function ResumeAnalyzer() {
   const { user } = useAuth();

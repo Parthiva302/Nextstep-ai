@@ -6,7 +6,7 @@ import MultiSelectDropdown from '../components/MultiSelectDropdown';
 import { CAREER_GOALS } from '../constants/skills';
 import { useAppStore } from '../store/app-store';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Profile() {
   const { signOut, user, profile, refreshProfile } = useAuth();

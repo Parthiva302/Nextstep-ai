@@ -3,7 +3,7 @@ import { CheckCircle2, Circle, Code2, BookOpen, Map, RefreshCw, Clock, Sparkles 
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/app-store';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Roadmap() {
   const { user, profile } = useAuth();

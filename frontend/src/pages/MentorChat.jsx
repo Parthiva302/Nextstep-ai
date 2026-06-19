@@ -3,7 +3,7 @@ import { Send, Bot, User, Circle, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useAppStore } from '../store/app-store';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function MentorChat() {
   const { user, profile } = useAuth();
@@ -11,7 +11,22 @@ export default function MentorChat() {
   const setMessages = useAppStore((state) => state.setMentorMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const messagesEndRef = useRef(null);
+
+  // Monitor network online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (!profile) return;
@@ -36,7 +51,10 @@ export default function MentorChat() {
   }, [messages.length, profile, setMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const timer = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages, isLoading]);
 
   const sendMessage = async (text) => {
@@ -49,7 +67,11 @@ export default function MentorChat() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/mentor/chat`, {
+      if (!navigator.onLine) {
+        throw new Error('You are currently offline. Please check your internet connection.');
+      }
+
+      const res = await fetch(`${API_URL}/api/mentor/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,21 +82,34 @@ export default function MentorChat() {
         })
       });
 
-      if (!res.ok) throw new Error('Backend unavailable');
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
+      
       const data = await res.json();
-      setMessages([...updatedMessages, { role: 'assistant', content: data.response || data.answer || 'Let me think about that...' }]);
-    } catch {
-      // Fallback: smart local response
-      const responses = {
-        resume: "Great question! For a strong resume: (1) Use action verbs like 'Built', 'Optimized', 'Led'. (2) Quantify achievements — e.g. 'Reduced load time by 40%'. (3) Tailor skills to the job description. (4) Keep it to 1 page for freshers.",
-        dsa: "For DSA improvement: Start with Arrays & Strings → then LinkedLists → Trees → Graphs → DP. Solve 2-3 problems daily on LeetCode. Focus on Easy first, then Medium. Understand patterns, not just solutions!",
-        interview: "Interview Tips: (1) Practice explaining your thought process out loud. (2) Study system design basics (Load Balancers, Caching, DBs). (3) Prepare STAR-format stories for behavioral questions. (4) Mock interviews are crucial — use Pramp or peers.",
-        project: "Project Ideas for your portfolio: (1) Full-stack Todo App with auth. (2) AI-powered resume analyzer (like this app!). (3) Real-time chat application. (4) E-commerce platform. (5) Data visualization dashboard. Start small, ship fast!",
-        career: `For a ${profile?.career_goal || 'Software Engineer'} career: Focus on building 3-5 solid projects, contribute to open source, get internship experience, and network on LinkedIn. Learn the core stack deeply before breadth.`,
-      };
-      const key = Object.keys(responses).find(k => text.toLowerCase().includes(k)) || null;
-      const fallback = key ? responses[key] : "That's a great question! I'd recommend focusing on building practical projects, improving your DSA skills, and networking actively. Would you like specific advice on any of these areas?";
-      setMessages([...updatedMessages, { role: 'assistant', content: fallback }]);
+      
+      if (data.success === false) {
+        throw new Error(data.error || 'Failed to generate AI response');
+      }
+
+      setMessages([
+        ...updatedMessages, 
+        { 
+          role: 'assistant', 
+          content: data.response || 'Let me think about that...', 
+          model: data.model_used 
+        }
+      ]);
+    } catch (err) {
+      const friendlyError = `⚠️ Connection Error: ${err.message || 'Unable to connect to the AI Mentor service.'} Please try again.`;
+      setMessages([
+        ...updatedMessages, 
+        { 
+          role: 'assistant', 
+          content: friendlyError, 
+          isError: true 
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -104,8 +139,8 @@ export default function MentorChat() {
             <p className="text-xs text-slate-500">Powered by NextStep AI</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#10B981] font-medium px-3 py-1 bg-[#10B981]/10 rounded-full">
-          <Circle size={8} fill="currentColor" /> Online
+        <div className={`flex items-center gap-2 text-sm font-medium px-3 py-1 rounded-full ${isOnline ? 'text-[#10B981] bg-[#10B981]/10' : 'text-[#EF4444] bg-[#EF4444]/10'}`}>
+          <Circle size={8} fill="currentColor" /> {isOnline ? 'Online' : 'Offline'}
         </div>
       </div>
 
@@ -116,8 +151,19 @@ export default function MentorChat() {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6]' : 'bg-[#6366F1]/10 dark:bg-[#6366F1]/20'}`}>
               {msg.role === 'user' ? <User size={16} className="text-white" /> : <Bot size={16} className="text-[#8B5CF6]" />}
             </div>
-            <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-[#8B5CF6] text-white rounded-tr-none' : 'bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-tl-none'}`}>
+            <div className={`max-w-[80%] rounded-2xl p-4 ${
+              msg.role === 'user' 
+                ? 'bg-[#8B5CF6] text-white rounded-tr-none' 
+                : msg.isError
+                  ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-tl-none'
+                  : 'bg-slate-50 dark:bg-[#0B0F19] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-tl-none'
+            }`}>
               <div className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</div>
+              {msg.model && (
+                <div className="mt-2 text-[10px] text-slate-400 dark:text-slate-500 italic text-right">
+                  Answered by: {msg.model}
+                </div>
+              )}
             </div>
           </div>
         ))}

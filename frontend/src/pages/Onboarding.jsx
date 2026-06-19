@@ -17,7 +17,7 @@ import {
   addNotification
 } from "../utils/score-engine";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Onboarding() {
   const [step, setStep] = useState(1);
